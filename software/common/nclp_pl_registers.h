@@ -1,0 +1,738 @@
+#ifndef NCLP_PL_REGISTERS_H
+#define NCLP_PL_REGISTERS_H
+
+/* NCLP register byte offsets, masks, and PL integration constants. */
+
+/* Active-high level inputs on the Zynq pl_ps_irq0 vector. These are bit
+ * positions, not GIC interrupt IDs. Clear the source condition to deassert. */
+#define NCLP_PL_IRQ_INTAN_DDR_STIM_BIT 0U
+#define NCLP_PL_IRQ_COMPUTE_FABRIC_BIT 1U
+#define NCLP_PL_IRQ_SFP_MAILBOX_BIT    2U
+#define NCLP_PL_IRQ_WIDTH              3U
+
+/* Stable PS base addresses. */
+#define NCLP_INTAN_BASE_DEFAULT        0x80000000U
+#define NCLP_DDR_WRITER_BASE_DEFAULT   0x80010000U
+#define NCLP_LED_BASE_DEFAULT          0x80011000U
+#define NCLP_STIM_BASE_DEFAULT         0x80012000U
+#define NCLP_TTL_ROUTER_BASE_DEFAULT   0x80014000U
+#define NCLP_RIPPLE_DETECTOR_BASE_DEFAULT 0x80020000U
+#define NCLP_COMPUTE_FABRIC_BASE_DEFAULT 0x80021000U
+#define NCLP_SFP_MAILBOX_BASE_DEFAULT  0x80030000U
+
+/* Uniform identity header used by project-owned PS-facing blocks. */
+#define NCLP_ABI_VERSION_V1_1          0x00010001U
+#define NCLP_ABI_VERSION_V2            0x00020000U
+#define NCLP_ABI_VERSION_V3            0x00030000U
+#define NCLP_ABI_VERSION_V4            0x00040000U
+#define NCLP_ABI_MAJOR_MASK            0xFFFF0000U
+
+/* ------------------------------------------------------------------------- */
+/* Flat Intan SPI AXI-Lite ABI v3: registers plus three direct AUX windows. */
+/* ------------------------------------------------------------------------- */
+/* Identity */
+#define INTAN_REG_BLOCK_ID                               0x000U
+#define INTAN_REG_ABI_VERSION                            0x004U
+#define INTAN_REG_CAPABILITIES                           0x008U
+#define INTAN_REG_INFO                                   0x00CU
+
+/* Acquisition lifecycle */
+#define INTAN_REG_ACQUISITION_COMMAND                    0x010U
+#define INTAN_REG_ACQUISITION_STATUS                     0x014U
+
+/* Acquisition configuration */
+#define INTAN_REG_ACQUISITION_CONFIG                     0x020U
+#define INTAN_REG_FINITE_FRAME_COUNT                     0x024U
+#define INTAN_REG_LOGICAL_STREAM_ENABLE                  0x028U
+#define INTAN_REG_OUTPUT_CONFIG                          0x02CU
+#define INTAN_REG_MISO_PHASE_PRIMARY                     0x030U
+#define INTAN_REG_MISO_PHASE_SECONDARY                   0x034U
+
+/* Sample clock */
+#define INTAN_REG_SAMPLE_CLOCK_COMMAND                   0x040U
+#define INTAN_REG_SAMPLE_CLOCK_CONFIG                    0x044U
+#define INTAN_REG_SAMPLE_CLOCK_STATUS                    0x048U
+
+/* AUX1 configuration */
+#define INTAN_REG_AUX1_BANK_SELECT                       0x050U
+#define INTAN_REG_AUX1_END_INDEX                         0x054U
+#define INTAN_REG_AUX1_LOOP_INDEX                        0x058U
+
+/* AUX2 configuration */
+#define INTAN_REG_AUX2_BANK_SELECT                       0x060U
+#define INTAN_REG_AUX2_END_INDEX                         0x064U
+#define INTAN_REG_AUX2_LOOP_INDEX                        0x068U
+
+/* AUX3 configuration */
+#define INTAN_REG_AUX3_BANK_SELECT                       0x070U
+#define INTAN_REG_AUX3_END_INDEX                         0x074U
+#define INTAN_REG_AUX3_LOOP_INDEX                        0x078U
+
+/* Fast settle */
+#define INTAN_REG_FAST_SETTLE_CONFIG                     0x080U
+
+/* Sync output */
+#define INTAN_REG_SYNC_MODE                              0x090U
+#define INTAN_REG_SYNC_PERIOD_FRAMES                     0x094U
+#define INTAN_REG_SYNC_HIGH_FRAMES                       0x098U
+
+/* Output diagnostics */
+#define INTAN_REG_OUTPUT_STATUS                          0x0A0U
+#define INTAN_REG_DIAGNOSTIC_COMMAND                     0x0A4U
+#define INTAN_REG_RECORDING_PAYLOAD_WORD_COUNT_LO        0x0A8U
+#define INTAN_REG_RECORDING_PAYLOAD_WORD_COUNT_HI        0x0ACU
+#define INTAN_REG_RECORDING_END_OF_SESSION_MARKER_COUNT  0x0B0U
+#define INTAN_REG_UNACCEPTED_SOURCE_EVENT_COUNT          0x0B4U
+#define INTAN_REG_RECORDING_STALL_CYCLE_COUNT            0x0B8U
+
+/* Error diagnostics */
+#define INTAN_REG_ERROR_STATUS                           0x0C0U
+#define INTAN_REG_ERROR_ENABLE                           0x0C4U
+#define INTAN_REG_ERROR_INCIDENT_COUNT                   0x0C8U
+#define INTAN_REG_LAST_ERROR_CODE                        0x0CCU
+
+/* Source layout */
+#define INTAN_REG_STREAM_SOURCE_MAP_LO                   0x0E0U
+#define INTAN_REG_STREAM_SOURCE_MAP_HI                   0x0E4U
+
+#define INTAN_AUX1_WINDOW_OFFSET             0x4000U
+#define INTAN_AUX2_WINDOW_OFFSET             0x8000U
+#define INTAN_AUX3_WINDOW_OFFSET             0xC000U
+#define INTAN_AUX_COMMANDS_PER_BANK          1024U
+#define INTAN_AUX_BANK_COUNT                 4U
+#define INTAN_AUX_COMMAND_OFFSET(window, bank, index) \
+    ((window) + ((((bank) * INTAN_AUX_COMMANDS_PER_BANK) + (index)) * 4U))
+
+#define INTAN_BLOCK_ID_EXPECTED              0x494E544EU
+#define INTAN_ABI_VERSION_EXPECTED           NCLP_ABI_VERSION_V3
+#define INTAN_CAPABILITIES_REQUIRED          0x000003FFU
+#define INTAN_INFO_EXPECTED                  0x10100400U
+#define INTAN_STREAM_SOURCE_MAP_LO_EXPECTED  0xB3A29180U
+#define INTAN_STREAM_SOURCE_MAP_HI_EXPECTED  0xF7E6D5C4U
+
+#define INTAN_CAP_FLAT_REGISTER_MAP          0x00000001U
+#define INTAN_CAP_RECORDING_OUTPUT_STREAM    0x00000002U
+#define INTAN_CAP_COMPUTE_OUTPUT_STREAM      0x00000004U
+#define INTAN_CAP_PERIODIC_SYNC              0x00000008U
+#define INTAN_CAP_RECORDING_GATE             0x00000010U
+#define INTAN_CAP_ERROR_IRQ                  0x00000020U
+#define INTAN_CAP_COHERENT_STIM_MARKER       0x00000040U
+#define INTAN_CAP_DIRECT_AUX_WINDOWS         0x00000080U
+#define INTAN_CAP_AUX_RAM_READBACK           0x00000100U
+#define INTAN_CAP_COHERENT_START_SNAPSHOT    0x00000200U
+
+#define INTAN_ACQUISITION_COMMAND_START      0x00000001U
+#define INTAN_ACQUISITION_CONFIG_CONTINUOUS  0x00000001U
+#define INTAN_ACQUISITION_CONFIG_DSP_SETTLE  0x00000002U
+#define INTAN_ACQUISITION_CONFIG_INIT_DUMMY  0x00000004U
+#define INTAN_ACQUISITION_STATUS_RUNNING     0x00000001U
+#define INTAN_ACQUISITION_STATUS_START_PENDING 0x00000002U
+#define INTAN_ACQUISITION_STATUS_ACCESS_LOCKED 0x00000004U
+#define INTAN_ACQUISITION_STATUS_START_REJECTED 0x00000008U
+
+#define INTAN_OUTPUT_CONFIG_RECORDING_ENABLE 0x00000001U
+#define INTAN_OUTPUT_CONFIG_COMPUTE_ENABLE   0x00000002U
+
+#define INTAN_MISO_PHASE_LANE_MASK           0x0000000FU
+#define INTAN_MISO_PHASE_LANE_SHIFT(lane)    (4U * (lane))
+#define INTAN_MISO_PHASE_PACK_LANE(value, lane) \
+    (((value) & INTAN_MISO_PHASE_LANE_MASK) << INTAN_MISO_PHASE_LANE_SHIFT(lane))
+
+#define INTAN_SAMPLE_CLOCK_CONFIG_PACK(o, d, m) \
+    (((o) & 0xFFU) | (((d) & 0x0FU) << 8U) | (((m) & 0x7FU) << 12U))
+#define INTAN_SAMPLE_CLOCK_COMMAND_APPLY     0x00000001U
+#define INTAN_SAMPLE_CLOCK_STATUS_LOCKED     0x00000001U
+#define INTAN_SAMPLE_CLOCK_STATUS_READY      0x00000002U
+#define INTAN_SAMPLE_CLOCK_STATUS_BUSY       0x00000004U
+#define INTAN_SAMPLE_CLOCK_STATUS_ERROR      0x00000008U
+#define INTAN_SAMPLE_CLOCK_STATUS_ERROR_CODE_MASK 0x00000070U
+#define INTAN_SAMPLE_CLOCK_STATUS_ERROR_CODE_SHIFT 4U
+
+#define INTAN_AUX_BANK_SELECT_A_SHIFT        0U
+#define INTAN_AUX_BANK_SELECT_B_SHIFT        2U
+#define INTAN_AUX_BANK_SELECT_C_SHIFT        4U
+#define INTAN_AUX_BANK_SELECT_D_SHIFT        6U
+#define INTAN_AUX_BANK_SELECT_FIELD_MASK     0x3U
+#define INTAN_AUX_BANK_SELECT_PACK(a, b, c, d) \
+    ((((a) & 0x3U) << 0U) | (((b) & 0x3U) << 2U) | \
+     (((c) & 0x3U) << 4U) | (((d) & 0x3U) << 6U))
+
+#define INTAN_FAST_SETTLE_ENABLE             0x00000001U
+#define INTAN_FAST_SETTLE_CHANNEL_MASK       0x000000F0U
+#define INTAN_FAST_SETTLE_CHANNEL_SHIFT      4U
+
+#define INTAN_SYNC_MODE_OFF                  0U
+#define INTAN_SYNC_MODE_PERIODIC             1U
+#define INTAN_SYNC_MODE_RECORDING_GATE       2U
+
+#define INTAN_OUTPUT_STATUS_SOURCE_EVENT_LOSS 0x00000001U
+#define INTAN_OUTPUT_STATUS_RECORDING_END_OF_SESSION_SEEN 0x00000002U
+#define INTAN_OUTPUT_STATUS_RECORDING_ACTIVE 0x00000004U
+#define INTAN_OUTPUT_STATUS_RECORDING_STALL  0x00000008U
+#define INTAN_OUTPUT_STATUS_ERROR_MASK \
+    (INTAN_OUTPUT_STATUS_SOURCE_EVENT_LOSS | INTAN_OUTPUT_STATUS_RECORDING_STALL)
+#define INTAN_DIAGNOSTIC_COMMAND_CLEAR       0x00000001U
+
+#define INTAN_ERROR_SOURCE_EVENT_LOSS        0x00000001U
+#define INTAN_ERROR_RECORDING_STALL          0x00000002U
+#define INTAN_ERROR_AUX_WRITE_REJECTED       0x00000004U
+#define INTAN_ERROR_START_REJECTED           0x00000008U
+#define INTAN_ERROR_CLOCK_REQUEST_REJECTED   0x00000010U
+#define INTAN_ERROR_CONTROL_WRITE_REJECTED   0x00000020U
+#define INTAN_ERROR_CLOCK_FAILURE            0x00000040U
+#define INTAN_ERROR_IMPLEMENTED_MASK         0x0000007FU
+#define INTAN_ERROR_ENABLE_DEFAULT \
+    (INTAN_ERROR_SOURCE_EVENT_LOSS | INTAN_ERROR_CLOCK_FAILURE)
+
+#define INTAN_LAST_ERROR_NONE                0U
+#define INTAN_LAST_ERROR_SOURCE_EVENT_LOSS   1U
+#define INTAN_LAST_ERROR_RECORDING_STALL     2U
+#define INTAN_LAST_ERROR_AUX_WRITE_REJECTED  3U
+#define INTAN_LAST_ERROR_START_REJECTED      4U
+#define INTAN_LAST_ERROR_CLOCK_REQUEST_REJECTED 5U
+#define INTAN_LAST_ERROR_CONTROL_WRITE_REJECTED 6U
+#define INTAN_LAST_ERROR_CLOCK_FAILURE       7U
+
+#define CLOCK_MANAGER_ERROR_NONE           0U
+#define CLOCK_MANAGER_ERROR_INVALID        1U
+#define CLOCK_MANAGER_ERROR_DRP_READ       2U
+#define CLOCK_MANAGER_ERROR_DRP_WRITE      3U
+#define CLOCK_MANAGER_ERROR_LOCK_TIMEOUT   4U
+#define CLOCK_MANAGER_ERROR_LOCK_LOST      5U
+#define CLOCK_MANAGER_ERROR_RESET_TIMEOUT  6U
+/* SAMPLE_CLOCK_STATUS overlays code 7 for an APPLY rejected before the
+ * shared clock manager accepts a request. */
+#define INTAN_SAMPLE_CLOCK_ERROR_REQUEST_REJECTED 7U
+
+/* ------------------------------------------------------------------------- */
+/* AXI DDR circular writer: identity, core, geometry, snapshots, counters. */
+/* ------------------------------------------------------------------------- */
+/* Identity */
+#define DDRW_REG_BLOCK_ID                                0x000U
+#define DDRW_REG_ABI_VERSION                             0x004U
+#define DDRW_REG_CAPABILITIES                            0x008U
+#define DDRW_REG_INFO                                    0x00CU
+
+/* Session lifecycle */
+#define DDRW_REG_COMMAND                                 0x010U
+#define DDRW_REG_STATUS                                  0x014U
+#define DDRW_REG_SESSION_STATE                           0x018U
+#define DDRW_REG_SESSION_ID                              0x01CU
+
+/* Next-session geometry */
+#define DDRW_REG_RING_BASE_ADDR_LO                       0x020U
+#define DDRW_REG_RING_BASE_ADDR_HI                       0x024U
+#define DDRW_REG_RING_SIZE_BYTES                         0x028U
+#define DDRW_REG_BLOCK_SIZE_BYTES                        0x02CU
+#define DDRW_REG_RING_CAPACITY_BLOCKS                    0x030U
+#define DDRW_REG_IRQ_COMPLETION_INTERVAL_BLOCKS          0x034U
+
+/* Write position */
+#define DDRW_REG_CURRENT_WRITE_ADDR_LO                   0x040U
+#define DDRW_REG_CURRENT_WRITE_ADDR_HI                   0x044U
+#define DDRW_REG_CURRENT_WRITE_OFFSET_BYTES              0x048U
+#define DDRW_REG_LAST_PRODUCED_BLOCK_ADDR_LO             0x04CU
+#define DDRW_REG_LAST_PRODUCED_BLOCK_ADDR_HI             0x050U
+#define DDRW_REG_LAST_PRODUCED_BLOCK_SIZE_BYTES          0x054U
+
+/* Producer/consumer accounting */
+#define DDRW_REG_CONSUMED_BLOCK_COUNT                    0x060U
+#define DDRW_REG_PRODUCED_BLOCK_COUNT                    0x064U
+#define DDRW_REG_OUTSTANDING_BLOCK_COUNT                 0x068U
+#define DDRW_REG_FINAL_BLOCK_SIZE_BYTES                  0x06CU
+
+/* FIFO diagnostics */
+#define DDRW_REG_FIFO_LEVEL_ENTRIES                      0x070U
+#define DDRW_REG_FIFO_HIGH_WATER_ENTRIES                 0x074U
+
+/* Error diagnostics */
+#define DDRW_REG_ERROR_STATUS                            0x080U
+#define DDRW_REG_LAST_AXI_BRESP                          0x084U
+#define DDRW_REG_INPUT_PROTOCOL_ERROR_COUNT              0x088U
+
+/* Transfer diagnostics */
+#define DDRW_REG_INPUT_BACKPRESSURE_CYCLE_COUNT          0x0A0U
+#define DDRW_REG_DDR_COMMITTED_BYTE_COUNT_LO             0x0A4U
+#define DDRW_REG_DDR_COMMITTED_BYTE_COUNT_HI             0x0A8U
+
+/* Coherent snapshot */
+#define DDRW_REG_SNAPSHOT_SEQUENCE                       0x0C0U
+#define DDRW_REG_SNAPSHOT_PRODUCED_BLOCK_COUNT           0x0C4U
+#define DDRW_REG_SNAPSHOT_CONSUMED_BLOCK_COUNT           0x0C8U
+#define DDRW_REG_SNAPSHOT_OUTSTANDING_BLOCK_COUNT        0x0CCU
+#define DDRW_REG_SNAPSHOT_FINAL_BLOCK_SIZE_BYTES         0x0D0U
+
+#define DDRW_BLOCK_ID_EXPECTED             0x44445257U
+#define DDRW_ABI_VERSION_EXPECTED          NCLP_ABI_VERSION_V2
+#define DDRW_INFO_EXPECTED                 0x00100802U
+
+#define DDRW_CAP_BURST16                   0x00000001U
+#define DDRW_CAP_INTERNAL_FIFO             0x00000002U
+#define DDRW_CAP_FIXED_SLOT                0x00000004U
+#define DDRW_CAP_EOS                       0x00000008U
+#define DDRW_CAPABILITIES_REQUIRED         0x0000000FU
+
+#define DDRW_COMMAND_START                 0x00000001U
+#define DDRW_COMMAND_ABORT                 0x00000002U
+#define DDRW_COMMAND_SOFT_RESET            0x00000004U
+#define DDRW_COMMAND_IRQ_ACK               0x00000008U
+#define DDRW_COMMAND_SNAPSHOT              0x00000010U
+
+#define DDRW_STATUS_RUNNING                0x00000001U
+#define DDRW_STATUS_UNCONSUMED_BLOCK_AVAILABLE 0x00000002U
+#define DDRW_STATUS_DATA_PATH_BUSY         0x00000004U
+#define DDRW_STATUS_RING_FULL              0x00000008U
+#define DDRW_STATUS_IRQ_PENDING            0x00000010U
+#define DDRW_STATUS_EOS_SEEN               0x00000020U
+#define DDRW_STATUS_EOS_COMMITTED          0x00000040U
+#define DDRW_STATUS_ABORT_DONE             0x00000080U
+#define DDRW_STATUS_FIFO_NONEMPTY          0x00000100U
+#define DDRW_STATUS_FAULT                  0x00000200U
+#define DDRW_STATUS_START_REJECTED         0x00000400U
+#define DDRW_STATUS_CONFIG_ERROR           0x00000800U
+#define DDRW_STATUS_AXI_ERROR              0x00001000U
+#define DDRW_STATUS_DATA_LOSS              0x00002000U
+#define DDRW_STATUS_ERROR_MASK             \
+    (DDRW_STATUS_DATA_LOSS | DDRW_STATUS_CONFIG_ERROR | \
+     DDRW_STATUS_AXI_ERROR | DDRW_STATUS_FAULT | \
+     DDRW_STATUS_START_REJECTED)
+
+#define DDRW_ERROR_DATA_LOSS               0x00000001U
+#define DDRW_ERROR_CONFIG_INVALID          0x00000002U
+#define DDRW_ERROR_AXI_WRITE_RESPONSE      0x00000004U
+#define DDRW_ERROR_SESSION_ABORTED         0x00000008U
+#define DDRW_ERROR_INPUT_PROTOCOL          0x00000010U
+#define DDRW_ERROR_ADDRESS_INVALID         0x00000020U
+#define DDRW_ERROR_RESET_DURING_SESSION    0x00000040U
+#define DDRW_ERROR_START_REJECTED          0x00000080U
+#define DDRW_ERROR_IMPLEMENTED_MASK        0x000000FFU
+
+#define DDRW_STATE_IDLE                    0U
+#define DDRW_STATE_CAPTURING               1U
+#define DDRW_STATE_FULL_WAIT               2U
+#define DDRW_STATE_DRAINING                3U
+#define DDRW_STATE_DONE                    4U
+#define DDRW_STATE_ABORT_DRAIN             5U
+#define DDRW_STATE_ABORT_DONE              6U
+#define DDRW_STATE_FAULT_DRAIN             7U
+#define DDRW_STATE_FAULT                   8U
+
+/* ------------------------------------------------------------------------- */
+/* LED, stimulation/DAC controller, and ripple detector AXI-Lite maps. */
+/* ------------------------------------------------------------------------- */
+#define LED_REG_BLOCK_ID                   0x00U
+#define LED_REG_ABI_VERSION                0x04U
+#define LED_REG_CAPABILITIES               0x08U
+#define LED_REG_INFO                       0x0CU
+#define LED_REG_SOFTWARE_ON_MASK           0x10U
+#define LED_REG_STATUS                     0x14U
+
+#define LED_BLOCK_ID_EXPECTED              0x4C454453U
+#define LED_ABI_VERSION_EXPECTED           NCLP_ABI_VERSION_V2
+#define LED_CAP_SOFTWARE_ON_MASK           0x00000001U
+#define LED_CAP_HARDWARE_FAULT_OVERRIDE    0x00000002U
+#define LED_CAP_SPI_RUNNING_INDICATOR      0x00000004U
+#define LED_CAPABILITIES_REQUIRED          0x00000007U
+#define LED_INFO_EXPECTED                  0x00000605U
+#define LED_STATUS_PIN_OUTPUT_MASK         0x0000003FU
+#define LED_STATUS_SPI_RUNNING             0x00000020U
+#define LED_STATUS_HARDWARE_ERROR          0x00000040U
+
+/* SOFTWARE_ON_MASK uses logical-on bits driven directly to active-high pins. */
+#define LED_ON_A_MASK                      0x00000001U
+#define LED_ON_B_MASK                      0x00000002U
+#define LED_ON_C_MASK                      0x00000004U
+#define LED_ON_D_MASK                      0x00000008U
+#define LED_ON_ERROR_MASK                  0x00000010U
+#define LED_ON_PORTS_MASK                  0x0000000FU
+#define LED_ON_ALL_MASK                    0x0000001FU
+
+/* Independent two-pin TTL router ABI v2. STIM/monitor arrive safety-gated;
+ * Intan sync remains raw. */
+#define TTL_ROUTER_REG_BLOCK_ID             0x000U
+#define TTL_ROUTER_REG_ABI_VERSION          0x004U
+#define TTL_ROUTER_REG_CAPABILITIES         0x008U
+#define TTL_ROUTER_REG_INFO                 0x00CU
+#define TTL_ROUTER_REG_ROUTE                0x010U
+#define TTL_ROUTER_REG_STATUS               0x014U
+#define TTL_ROUTER_REG_ERROR_STATUS         0x018U
+#define TTL_ROUTER_BLOCK_ID_EXPECTED        0x54544C52U
+#define TTL_ROUTER_ABI_VERSION_EXPECTED     NCLP_ABI_VERSION_V2
+#define TTL_ROUTER_CAPABILITIES_REQUIRED    0x0000000BU
+#define TTL_ROUTER_INFO_EXPECTED            0x00040202U
+#define TTL_ROUTER_AXI_APERTURE_BYTES       0x1000U
+#define TTL_ROUTER_SOURCE_OFF               0U
+#define TTL_ROUTER_SOURCE_STIM              1U
+#define TTL_ROUTER_SOURCE_INTAN_SYNC        2U
+#define TTL_ROUTER_SOURCE_TRIGGER_MONITOR   3U
+#define TTL_ROUTER_TTL0_SOURCE_SHIFT        0U
+#define TTL_ROUTER_TTL1_SOURCE_SHIFT        2U
+#define TTL_ROUTER_ROUTE_MASK               0x0000000FU
+#define TTL_ROUTER_STATUS_ROUTE_WRITE_LOCKED 0x00000001U
+/* STATUS bits 1 and 3 are reserved; safety/recovery belong to STIM. */
+#define TTL_ROUTER_STATUS_ROUTE_CONFLICT    0x00000004U
+#define TTL_ROUTER_STATUS_TTL_OUTPUT_MASK   0x00000030U
+#define TTL_ROUTER_STATUS_INTAN_SYNC        0x00000040U
+#define TTL_ROUTER_STATUS_STIMULUS_LEVEL    0x00000080U
+#define TTL_ROUTER_STATUS_TRIGGER_MONITOR_LEVEL 0x00000100U
+#define TTL_ROUTER_ERROR_CONFIG_WRITE_BLOCKED 0x00000001U
+#define TTL_ROUTER_ERROR_INVALID_ROUTE      0x00000002U
+#define TTL_ROUTER_ERROR_ALL_MASK           0x00000003U
+
+#define STIM_REG_BLOCK_ID                  0x000U
+#define STIM_REG_ABI_VERSION               0x004U
+#define STIM_REG_CAPABILITIES              0x008U
+#define STIM_REG_INFO                      0x00CU
+/* Lifecycle and trigger outcome counters. */
+#define STIM_REG_COMMAND                   0x010U
+#define STIM_REG_STATUS                    0x014U
+#define STIM_REG_ACCEPTED_TRIGGER_COUNT    0x018U
+#define STIM_REG_UNSERVED_TRIGGER_COUNT    0x01CU
+/* Output action settings; pin selection belongs to TTL_ROUTER. */
+#define STIM_REG_ACTION_CONFIG             0x020U
+#define STIM_REG_TTL_PULSE_WIDTH_AXI_CYCLES 0x024U
+#define STIM_REG_INTAN_STIM_MARKER_MASK    0x028U
+/* DAC waveform playback settings and coherent runtime snapshot. */
+#define STIM_REG_DAC_PLAYBACK_CONFIG       0x040U
+#define STIM_REG_DAC_UPDATE_PERIOD_CLOCKS  0x044U
+#define STIM_REG_DAC_START_INDEX           0x048U
+#define STIM_REG_DAC_LOOP_INDEX            0x04CU
+#define STIM_REG_DAC_END_INDEX             0x050U
+#define STIM_REG_DAC_FINITE_UPDATE_COUNT   0x054U
+#define STIM_REG_DAC_PRIME_STATUS          0x060U
+#define STIM_REG_DAC_CURRENT_WAVEFORM_INDEX 0x064U
+#define STIM_REG_DAC_COMPLETED_UPDATE_COUNT 0x068U
+/* Safety and fault diagnostics. */
+#define STIM_REG_SAFETY_STATUS             0x070U
+#define STIM_REG_SAFE_OFF_COUNT            0x074U
+#define STIM_REG_ERROR_STATUS              0x080U
+#define STIM_REG_FAULT_IRQ_ENABLE           0x084U
+#define STIM_REG_ERROR_INCIDENT_CYCLE_COUNT 0x088U
+#define STIM_REG_LAST_ERROR_VECTOR          0x08CU
+/* DAC clock programming. */
+#define STIM_REG_DAC_CLOCK_CONFIG           0x0A0U
+#define STIM_REG_DAC_CLOCK_COMMAND          0x0A4U
+#define STIM_REG_DAC_CLOCK_STATUS           0x0A8U
+#define STIM_RAM_OFFSET                     0x1000U
+#define STIM_RAM_DEPTH_WORDS                1024U
+#define STIM_AXI_APERTURE_BYTES             0x2000U
+#define STIM_BLOCK_ID_EXPECTED              0x5354494DU
+#define STIM_ABI_VERSION_EXPECTED           NCLP_ABI_VERSION_V3
+#define STIM_CAP_TTL_PULSE                 0x00000001U
+#define STIM_CAP_MCP4922_DAC                0x00000002U
+#define STIM_CAP_WAVEFORM_RAM               0x00000004U
+#define STIM_CAP_DAC_PRIME_SEQUENCE         0x00000008U
+#define STIM_CAP_INTAN_MARKER               0x00000020U
+#define STIM_CAP_ERROR_IRQ                  0x00000040U
+#define STIM_CAP_PROGRAMMABLE_DAC_CLOCK     0x00000080U
+#define STIM_CAP_TRIGGER_MONITOR            0x00000100U
+#define STIM_CAP_DEBOUNCED_SAFE_OFF_BUTTON  0x00000200U
+#define STIM_CAP_MANDATORY_DAC_ZERO         0x00000400U
+#define STIM_CAPABILITIES_REQUIRED          0x000007EFU
+#define STIM_INFO_EXPECTED                  0x02040400U
+#define STIM_INFO_CHANNELS_SHIFT            24U
+#define STIM_INFO_WORD_BYTES_SHIFT          16U
+#define STIM_INFO_RAM_DEPTH_MASK            0x0000FFFFU
+#define STIM_RAM_WORD_OFFSET(index)         (STIM_RAM_OFFSET + (4U * (index)))
+#define STIM_DAC_PACK_CODES(code_a, code_b) \
+    (((code_a) & STIM_DAC_CODE_MASK) | \
+     (((code_b) & STIM_DAC_CODE_MASK) << STIM_DAC_CODE_B_SHIFT))
+
+#define STIM_COMMAND_ARM                    0x00000001U
+#define STIM_COMMAND_DISARM                 0x00000002U
+#define STIM_COMMAND_SOFTWARE_TRIGGER       0x00000004U
+#define STIM_COMMAND_STOP_ACTIVITY          0x00000008U
+#define STIM_COMMAND_CLEAR_DIAGNOSTICS      0x00000010U
+#define STIM_COMMAND_PRIME_DAC              0x00000020U
+
+#define STIM_OUTPUT_MODE_OFF                0U
+#define STIM_OUTPUT_MODE_TTL                1U
+#define STIM_OUTPUT_MODE_DAC                2U
+#define STIM_ACTION_CONFIG_EXTERNAL_TRIGGER_ENABLE 0x00000010U
+
+
+/* INTAN_STIM_MARKER_MASK bit 0 is recorded as logical TTL[2], bit 13 as TTL[15]. */
+#define STIM_INTAN_TTL_LOGICAL_SHIFT        2U
+
+#define STIM_DAC_PLAYBACK_CONFIG_A_ENABLE  0x00000001U
+#define STIM_DAC_PLAYBACK_CONFIG_B_ENABLE  0x00000002U
+#define STIM_DAC_PLAYBACK_CONFIG_CONTINUOUS 0x00000004U
+#define STIM_DAC_CODE_MASK                  0x00000FFFU
+#define STIM_DAC_CODE_B_SHIFT               16U
+
+#define STIM_STATUS_ARMED                   0x00000001U
+#define STIM_STATUS_BUSY                    0x00000002U
+#define STIM_STATUS_TTL_ACTIVE              0x00000004U
+#define STIM_STATUS_DAC_RUNNING             0x00000008U
+#define STIM_STATUS_DAC_BUSY                0x00000010U
+#define STIM_STATUS_CONFIG_VALID            0x00000020U
+#define STIM_STATUS_DAC_CLOCK_LOCKED          0x00000040U
+#define STIM_STATUS_DAC_CLOCK_READY           0x00000080U
+#define STIM_STATUS_DAC_CLOCK_PROGRAM_BUSY    0x00000100U
+#define STIM_STATUS_DAC_PRIMED               0x00000800U
+#define STIM_STATUS_DAC_PRIME_BUSY           0x00001000U
+#define STIM_STATUS_CONFIG_LOCKED            0x00004000U
+#define STIM_STATUS_ERROR_PENDING            0x00008000U
+#define STIM_STATUS_FAULT_IRQ                0x00010000U
+
+#define STIM_SAFETY_STATUS_SAFE_OFF_ACTIVE   0x00000001U
+#define STIM_SAFETY_STATUS_SAFE_OFF_SEEN     0x00000002U
+
+#define STIM_ERROR_INVALID_CONFIG            0x00000002U
+#define STIM_ERROR_DAC_PRIME_FAULT           0x00000004U
+#define STIM_ERROR_DAC_CLOCK_LOST            0x00000008U
+#define STIM_ERROR_DAC_WAVEFORM_ABORT        0x00000010U
+#define STIM_ERROR_DAC_TIMING_LATE           0x00000020U
+#define STIM_ERROR_TRIGGER_DROPPED            0x00000040U
+#define STIM_ERROR_CONFIG_WRITE_BLOCKED      0x00000080U
+#define STIM_ERROR_RAM_WRITE_BLOCKED         0x00000100U
+#define STIM_ERROR_ALL_MASK                  0x000001FEU
+#define STIM_FAULT_IRQ_ENABLE_DEFAULT        0x0000003EU
+
+#define STIM_DAC_PRIME_STATUS_PRIMED         0x00000001U
+#define STIM_DAC_PRIME_STATUS_BUSY           0x00000002U
+#define STIM_DAC_PRIME_STATUS_DONE           0x00000004U
+#define STIM_DAC_PRIME_STATUS_FAULT          0x00000008U
+
+#define STIM_DAC_CLOCK_COMMAND_PROGRAM        0x00000001U
+#define STIM_DAC_CLOCK_CONFIG_O_SHIFT         0U
+#define STIM_DAC_CLOCK_CONFIG_D_SHIFT         8U
+#define STIM_DAC_CLOCK_CONFIG_M_SHIFT         12U
+#define STIM_DAC_CLOCK_CONFIG_DEFAULT_O       35U
+#define STIM_DAC_CLOCK_CONFIG_DEFAULT_D       2U
+#define STIM_DAC_CLOCK_CONFIG_DEFAULT_M       20U
+#define STIM_DAC_CLOCK_CONFIG_PLL_M_MAX       21U
+#define STIM_DAC_CLOCK_STATUS_LOCKED          0x00000001U
+#define STIM_DAC_CLOCK_STATUS_READY           0x00000002U
+#define STIM_DAC_CLOCK_STATUS_PROGRAM_BUSY    0x00000004U
+#define STIM_DAC_CLOCK_STATUS_ERROR           0x00000008U
+#define STIM_DAC_CLOCK_STATUS_ERROR_CODE_MASK 0x00000070U
+#define STIM_DAC_CLOCK_STATUS_ERROR_CODE_SHIFT 4U
+
+/* Ripple detector v3: grouped control/configuration/telemetry register ABI. */
+#define RIPPLE_DETECTOR_REG_BLOCK_ID                 0x00U
+#define RIPPLE_DETECTOR_REG_ABI_VERSION              0x04U
+#define RIPPLE_DETECTOR_REG_CAPABILITIES             0x08U
+#define RIPPLE_DETECTOR_REG_LIMITS                   0x0CU
+#define RIPPLE_DETECTOR_REG_COMMAND                  0x10U
+#define RIPPLE_DETECTOR_REG_STATUS                   0x14U
+
+#define RIPPLE_DETECTOR_REG_INPUT_CHANNEL_ID         0x20U
+#define RIPPLE_DETECTOR_REG_FILTER_KIND              0x24U
+#define RIPPLE_DETECTOR_REG_FIR_TAP_COUNT            0x28U
+#define RIPPLE_DETECTOR_REG_POWER_WINDOW_US          0x2CU
+#define RIPPLE_DETECTOR_REG_REFRACTORY_PERIOD_MS     0x30U
+#define RIPPLE_DETECTOR_REG_BASELINE_MEAN_BITS       0x34U
+#define RIPPLE_DETECTOR_REG_BASELINE_STDDEV_BITS     0x38U
+#define RIPPLE_DETECTOR_REG_THRESHOLD_K_BITS         0x3CU
+
+#define RIPPLE_DETECTOR_REG_COEFFICIENT_INDEX        0x40U
+#define RIPPLE_DETECTOR_REG_COEFFICIENT_BITS         0x44U
+
+#define RIPPLE_DETECTOR_REG_TRIGGER_REQUEST_COUNT    0x50U
+#define RIPPLE_DETECTOR_REG_POWER_SAMPLE_COUNT       0x54U
+#define RIPPLE_DETECTOR_REG_MEAN_SQUARE              0x58U
+#define RIPPLE_DETECTOR_REG_SUM_SQUARE_THRESHOLD_BITS 0x5CU
+#define RIPPLE_DETECTOR_REG_LAST_INPUT_TIMESTAMP     0x60U
+
+#define RIPPLE_DETECTOR_BLOCK_ID_EXPECTED            0x52505754U
+#define RIPPLE_DETECTOR_ABI_VERSION_EXPECTED         NCLP_ABI_VERSION_V3
+#define RIPPLE_DETECTOR_CAP_FIR                      0x00000001U
+#define RIPPLE_DETECTOR_CAP_IIR                      0x00000002U
+#define RIPPLE_DETECTOR_CAP_PROGRAMMABLE_COEFFICIENTS 0x00000004U
+#define RIPPLE_DETECTOR_CAP_INPUT_CHANNEL_SELECT     0x00000008U
+#define RIPPLE_DETECTOR_CAP_CONFIGURABLE_POWER_WINDOW 0x00000010U
+#define RIPPLE_DETECTOR_CAP_REFRACTORY               0x00000020U
+#define RIPPLE_DETECTOR_CAP_LIVE_THRESHOLD_K         0x00000040U
+#define RIPPLE_DETECTOR_CAP_UINT32_MEAN_SQUARE       0x00000080U
+#define RIPPLE_DETECTOR_CAP_FIXED_INTERNAL           0x00000100U
+#define RIPPLE_DETECTOR_CAPABILITIES_REQUIRED        0x000001FFU
+#define RIPPLE_DETECTOR_LIMITS_EXPECTED              0x001E0100U
+
+#define RIPPLE_DETECTOR_COMMAND_STOP                 0x00000000U
+#define RIPPLE_DETECTOR_COMMAND_START                0x00000001U
+#define RIPPLE_DETECTOR_COMMAND_VALIDATE             0x00000002U
+#define RIPPLE_DETECTOR_COMMAND_RESTORE_DEFAULTS     0x00000004U
+#define RIPPLE_DETECTOR_STATUS_ENABLED        0x00000001U
+#define RIPPLE_DETECTOR_STATUS_BUSY           0x00000002U
+#define RIPPLE_DETECTOR_STATUS_CONFIG_VALID   0x00000004U
+#define RIPPLE_DETECTOR_STATUS_RATE_30K_VALID 0x00000008U
+#define RIPPLE_DETECTOR_STATUS_WAITING_STREAM 0x00000010U
+#define RIPPLE_DETECTOR_STATUS_SESSION_CLOSED 0x00000020U
+#define RIPPLE_DETECTOR_STATUS_FAULT          0x00000040U
+#define RIPPLE_DETECTOR_STATUS_WRITE_REJECT   0x00000080U
+#define RIPPLE_DETECTOR_STATUS_WARMUP         0x00000100U
+#define RIPPLE_DETECTOR_FIR_TAP_COUNT_MAX            256U
+#define RIPPLE_DETECTOR_FIR_TAP_COUNT_DEFAULT        129U
+#define RIPPLE_DETECTOR_FILTER_FIR                   0U
+#define RIPPLE_DETECTOR_FILTER_IIR                   1U
+#define RIPPLE_DETECTOR_IIR_COEFFICIENT_BASE         256U
+#define RIPPLE_DETECTOR_IIR_COEFFICIENT_COUNT        10U
+#define RIPPLE_DETECTOR_COEFFICIENT_COUNT            266U
+#define RIPPLE_DETECTOR_INPUT_CHANNEL_ID_MAX         511U
+#define RIPPLE_DETECTOR_POWER_WINDOW_US_MIN          1U
+#define RIPPLE_DETECTOR_POWER_WINDOW_US_MAX          10000U
+#define RIPPLE_DETECTOR_POWER_WINDOW_US_DEFAULT      4000U
+#define RIPPLE_DETECTOR_REFRACTORY_PERIOD_MS_MAX     1431655765U
+#define RIPPLE_DETECTOR_REFRACTORY_PERIOD_MS_DEFAULT 1000U
+#define RIPPLE_DETECTOR_POWER_OUTPUT_RATE_HZ         3000U
+
+
+/* ------------------------------------------------------------------------- */
+/* Compute fabric: Intan selection, packet switching and SFP trigger endpoint. */
+/* ------------------------------------------------------------------------- */
+/* Identity */
+#define COMPUTE_FABRIC_REG_BLOCK_ID                    0x000U
+#define COMPUTE_FABRIC_REG_ABI_VERSION                 0x004U
+#define COMPUTE_FABRIC_REG_CAPABILITIES                0x008U
+
+/* Configuration and commands */
+#define COMPUTE_FABRIC_REG_CONTROL                     0x010U
+#define COMPUTE_FABRIC_REG_SOURCE_STREAM_MASK          0x014U
+#define COMPUTE_FABRIC_REG_COMMAND                     0x018U
+
+/* Live status */
+#define COMPUTE_FABRIC_REG_STATUS                      0x020U
+#define COMPUTE_FABRIC_REG_LINK_STATUS                 0x024U
+
+/* Configuration and data-path diagnostics */
+#define COMPUTE_FABRIC_REG_CONTROL_REJECT_COUNT        0x030U
+#define COMPUTE_FABRIC_REG_LOCAL_DECODE_FAULT_COUNT    0x034U
+#define COMPUTE_FABRIC_REG_SFP_PACKETIZER_FAULT_COUNT  0x038U
+#define COMPUTE_FABRIC_REG_SFP_TX_INTERRUPTED_PACKET_COUNT 0x03CU
+#define COMPUTE_FABRIC_REG_RX_MALFORMED_PACKET_COUNT   0x040U
+#define COMPUTE_FABRIC_REG_RX_FIFO_OVERFLOW_COUNT      0x044U
+#define COMPUTE_FABRIC_REG_RX_DROPPED_PACKET_COUNT     0x048U
+
+/* Accepted/queued packet accounting */
+#define COMPUTE_FABRIC_REG_PS_RX_PACKET_COUNT          0x04CU
+#define COMPUTE_FABRIC_REG_RX_STIM_TRIGGER_COUNT       0x050U
+#define COMPUTE_FABRIC_REG_RX_STIM_TRIGGER_REJECT_COUNT 0x054U
+#define COMPUTE_FABRIC_REG_INTAN_TX_PACKET_ENQUEUED_COUNT 0x058U
+#define COMPUTE_FABRIC_REG_PS_TX_ATTEMPT_ENQUEUED_COUNT 0x05CU
+
+#define COMPUTE_FABRIC_BLOCK_ID_EXPECTED               0x4E434650U
+#define COMPUTE_FABRIC_ABI_VERSION_EXPECTED            NCLP_ABI_VERSION_V4
+#define COMPUTE_FABRIC_CAPABILITIES_REQUIRED           0x0000003FU
+
+/* CONTROL */
+#define COMPUTE_FABRIC_CONTROL_PHY_ENABLE              0x00000001U
+#define COMPUTE_FABRIC_CONTROL_SFP_MODE_SELECT         0x00000002U
+#define COMPUTE_FABRIC_CONTROL_FAULT_IRQ_ENABLE        0x00000100U
+
+/* COMMAND */
+#define COMPUTE_FABRIC_COMMAND_CLEAR_DIAGNOSTICS       0x00000001U
+#define COMPUTE_FABRIC_COMMAND_CLEAR_INTAN_EOS         0x00000002U
+
+/* STATUS */
+#define COMPUTE_FABRIC_STATUS_LINK_UP                  0x00000001U
+#define COMPUTE_FABRIC_STATUS_PHY_ENABLE               0x00000002U
+#define COMPUTE_FABRIC_STATUS_SFP_MODE_SELECTED        0x00000004U
+#define COMPUTE_FABRIC_STATUS_COMPUTE_STREAM_ACTIVE    0x00000008U
+#define COMPUTE_FABRIC_STATUS_CONFIG_IDLE              0x00000010U
+#define COMPUTE_FABRIC_STATUS_LOCAL_DECODER_IN_FRAME   0x00000020U
+#define COMPUTE_FABRIC_STATUS_SFP_PACKETIZER_IN_FRAME  0x00000040U
+#define COMPUTE_FABRIC_STATUS_TX_IDLE                  0x00000080U
+#define COMPUTE_FABRIC_STATUS_TX_INTAN_ACTIVE          0x00000100U
+#define COMPUTE_FABRIC_STATUS_PS_TX_PENDING_OR_ACTIVE  0x00000200U
+#define COMPUTE_FABRIC_STATUS_PS_RX_PENDING             0x00000400U
+#define COMPUTE_FABRIC_STATUS_LOCAL_DECODE_FAULT       0x00000800U
+#define COMPUTE_FABRIC_STATUS_SFP_PACKETIZER_FAULT     0x00001000U
+#define COMPUTE_FABRIC_STATUS_SFP_TX_INTERRUPTED_PACKET 0x00002000U
+#define COMPUTE_FABRIC_STATUS_RX_FAULT                 0x00004000U
+#define COMPUTE_FABRIC_STATUS_CONTROL_REJECT           0x00008000U
+#define COMPUTE_FABRIC_STATUS_INTAN_EOS_SEEN           0x00010000U
+#define COMPUTE_FABRIC_STATUS_FAULT_MASK               0x0000F800U
+
+/* LINK_STATUS */
+#define COMPUTE_FABRIC_LINK_STATUS_UP                  0x00000001U
+#define COMPUTE_FABRIC_LINK_STATUS_FAULT               0x00000002U
+#define COMPUTE_FABRIC_LINK_STATUS_RX_PARSER_IDLE      0x00000004U
+
+/* One header beat precedes each unchanged 64-bit payload packet. */
+#define NCLP_SFP_PROTOCOL_VERSION                      1U
+#define NCLP_SFP_HEADER_TARGET_MASK                    0x7FU
+#define NCLP_SFP_HEADER_EOM                            0x80U
+#define NCLP_SFP_TARGET_INTAN_STREAM                   0x01U
+#define NCLP_SFP_TARGET_PS                             0x02U
+#define NCLP_SFP_TARGET_STIM_TRIGGER                   0x03U
+#define NCLP_SFP_STIM_TRIGGER_COMMAND                  1ULL
+
+/* ------------------------------------------------------------------------- */
+/* Fixed PS/SFP packet mailbox. The compute fabric strips/inserts target 2. */
+/* ------------------------------------------------------------------------- */
+/* Identity */
+#define SFP_MAILBOX_REG_BLOCK_ID                       0x000U
+#define SFP_MAILBOX_REG_ABI_VERSION                    0x004U
+#define SFP_MAILBOX_REG_CAPABILITIES                   0x008U
+#define SFP_MAILBOX_REG_INFO                           0x00CU
+
+/* Control and live status */
+#define SFP_MAILBOX_REG_STATUS                         0x010U
+#define SFP_MAILBOX_REG_IRQ_ENABLE                     0x014U
+#define SFP_MAILBOX_REG_COMMAND                        0x018U
+#define SFP_MAILBOX_REG_ERROR_STATUS                   0x01CU
+
+/* RX diagnostics */
+#define SFP_MAILBOX_REG_RX_PACKET_COUNT                0x020U
+#define SFP_MAILBOX_REG_RX_OVERFLOW_COUNT              0x024U
+#define SFP_MAILBOX_REG_RX_MALFORMED_COUNT             0x028U
+
+/* TX diagnostics */
+#define SFP_MAILBOX_REG_TX_AURORA_ACCEPTED_COUNT       0x02CU
+#define SFP_MAILBOX_REG_TX_REJECT_COUNT                0x030U
+#define SFP_MAILBOX_REG_TX_REPLAY_COUNT                0x034U
+
+/* Fixed packet windows */
+#define SFP_MAILBOX_RX_DATA_OFFSET                     0x040U
+#define SFP_MAILBOX_TX_DATA_OFFSET                     0x080U
+#define SFP_MAILBOX_RX_WORD_COUNT                      16U
+#define SFP_MAILBOX_TX_WORD_COUNT                      10U
+#define SFP_MAILBOX_RX_DATA_WORD_OFFSET(word) \
+    (SFP_MAILBOX_RX_DATA_OFFSET + ((word) * 4U))
+#define SFP_MAILBOX_TX_DATA_WORD_OFFSET(word) \
+    (SFP_MAILBOX_TX_DATA_OFFSET + ((word) * 4U))
+
+#define SFP_MAILBOX_BLOCK_ID_EXPECTED                  0x4E504D42U
+#define SFP_MAILBOX_ABI_VERSION_EXPECTED               NCLP_ABI_VERSION_V2
+#define SFP_MAILBOX_CAPABILITIES_REQUIRED              0x0000003FU
+#define SFP_MAILBOX_INFO_EXPECTED                      0x00280040U
+
+#define SFP_MAILBOX_STATUS_RX_AVAILABLE                0x00000001U
+#define SFP_MAILBOX_STATUS_RX_FULL                     0x00000002U
+#define SFP_MAILBOX_STATUS_TX_SPACE_AVAILABLE          0x00000004U
+#define SFP_MAILBOX_STATUS_TX_PENDING                  0x00000008U
+#define SFP_MAILBOX_STATUS_TX_OUTPUT_VALID             0x00000010U
+#define SFP_MAILBOX_STATUS_LINK_UP                     0x00000020U
+#define SFP_MAILBOX_STATUS_TX_AURORA_ACCEPTED          0x00000040U
+#define SFP_MAILBOX_STATUS_TX_REPLAY_PENDING           0x00000080U
+#define SFP_MAILBOX_STATUS_RX_COUNT_MASK               0x00000300U
+#define SFP_MAILBOX_STATUS_RX_COUNT_SHIFT              8U
+#define SFP_MAILBOX_STATUS_TX_COUNT_MASK               0x00000C00U
+#define SFP_MAILBOX_STATUS_TX_COUNT_SHIFT              10U
+#define SFP_MAILBOX_STATUS_ERROR_PENDING               0x00001000U
+
+#define SFP_MAILBOX_IRQ_RX_AVAILABLE                   0x00000001U
+#define SFP_MAILBOX_IRQ_TX_AURORA_ACCEPTED             0x00000002U
+#define SFP_MAILBOX_IRQ_ERROR                          0x00000004U
+
+#define SFP_MAILBOX_COMMAND_RX_POP                     0x00000001U
+#define SFP_MAILBOX_COMMAND_TX_COMMIT                  0x00000002U
+#define SFP_MAILBOX_COMMAND_CLEAR_TX_AURORA_ACCEPTED   0x00000004U
+#define SFP_MAILBOX_COMMAND_CLEAR_DIAGNOSTICS          0x00000008U
+
+#define SFP_MAILBOX_ERROR_RX_MALFORMED                 0x00000001U
+#define SFP_MAILBOX_ERROR_RX_OVERFLOW                  0x00000002U
+#define SFP_MAILBOX_ERROR_RX_POP_EMPTY                 0x00000004U
+#define SFP_MAILBOX_ERROR_TX_COMMIT_FULL               0x00000008U
+#define SFP_MAILBOX_ERROR_TX_FEEDBACK                  0x00000010U
+#define SFP_MAILBOX_ERROR_IMPLEMENTED_MASK             0x0000001FU
+
+/* Local-compute event fields within the 64-bit event word. */
+#define NCLP_COMPUTE_EVENT_KIND_SHIFT                  30U
+#define NCLP_COMPUTE_EVENT_KIND_MASK                   0x3U
+#define NCLP_COMPUTE_EVENT_AMPLIFIER                   0U
+#define NCLP_COMPUTE_EVENT_AUX_REPLY                   1U
+#define NCLP_COMPUTE_EVENT_TTL                         2U
+
+#endif /* NCLP_PL_REGISTERS_H */

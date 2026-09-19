@@ -1,0 +1,23 @@
+# Altium local history, previews, caches, and generated output folders
+History/
+__Previews/
+Project Logs for */
+Project Outputs for */
+**/History/
+**/__Previews/
+**/Project Logs for */
+**/Project Outputs for */
+
+# User/workspace state
+*.DsnWrk
+*.PrjPcbStructure
+*.PrjPcbVariants
+*.PcbDocPreview
+*.SchDocPreview
+*.PcbDoc.htm
+*.~*
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini

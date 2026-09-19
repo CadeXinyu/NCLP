@@ -1,0 +1,27 @@
+# Vivado generated projects and local state
+vivado_project/
+.Xil/
+logs/
+*.jou
+*.log
+*.str
+*.pb
+*.dcp
+*.bit
+*.xsa
+
+# Vitis/HLS generated projects and outputs
+vitis_project/
+open_ephys_project/
+programmable_logic/hls/ripple_detector/build/
+programmable_logic/hls/ripple_detector/hls_build.log
+*.elf
+*.bin
+
+# Tool, editor, and OS caches
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
