@@ -16,6 +16,15 @@ also stream data over SFP+ to another Xilinx FPGA for additional processing.
 | SFP+ | Aurora 64B/66B at 10.3125 Gb/s |
 | Tools | Vivado and Vitis 2025.1 |
 
+## Architecture
+
+![NCLP system architecture](figures/nclp-architecture.png)
+
+The PL handles Intan acquisition, local ripple detection, and TTL/DAC output;
+the PS provides control and Ethernet host communication (A). The SFP+/Aurora
+path (B) supports streaming to an external FPGA for future processing workloads,
+such as ML inference or spike sorting. VCU1525 integration is under development.
+
 ## Build
 
 ```bash
